@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Derivadas</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjs/lib/browser/math.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        canvas {
+            max-width: 600px;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calculadora de Derivadas</h1>
+    <label for="functionInput">Ingresa una función (en términos de x):</label>
+    <input type="text" id="functionInput" value="x^2">
+    <button onclick="calcularDerivada()">Calcular Derivada</button>
+    
+    <h2>Resultados</h2>
+    <p id="resultadoDirecto"></p>
+    <p id="resultadoFormal"></p>
+
+    <h2>Gráfica</h2>
+    <canvas id="grafica" width="600" height="400"></canvas>
+
+    <script>
+        function calcularDerivada() {
+            const funcStr = document.getElementById('functionInput').value;
+            const f = math.compile(funcStr);
+            const h = 0.0001; // Valor pequeño para el método formal
+            const x0 = 1; // Punto en el que se evalúa la derivada
+            
+            // Método directo
+            const derivadaDirecta = math.derivative(funcStr, 'x').evaluate({x: x0});
+            document.getElementById('resultadoDirecto').innerText = `Derivada directa en x = ${x0}: ${derivadaDirecta}`;
+
+            // Método formal
+            const f_x0 = f.evaluate({x: x0});
+            const f_x0_h = f.evaluate({x: x0 + h});
+            const derivadaFormal = (f_x0_h - f_x0) / h;
+            document.getElementById('resultadoFormal').innerText = `Derivada formal en x = ${x0}: ${derivadaFormal}`;
+
+            // Graficar
+            graficar(funcStr);
+        }
+
+        function graficar(funcStr) {
+            const ctx = document.getElementById('grafica').getContext('2d');
+            const xValues = [];
+            const yValues = [];
+            const derivadaValues = [];
+
+            for (let x = -10; x <= 10; x += 0.1) {
+                xValues.push(x);
+                yValues.push(math.evaluate(funcStr, {x: x}));
+                derivadaValues.push(math.evaluate(math.derivative(funcStr, 'x').toString(), {x: x}));
+            }
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xValues,
+                    datasets: [
+                        {
+                            label: 'f(x)',
+                            data: yValues,
+                            borderColor: 'blue',
+                            fill: false
+                        },
+                        {
+                            label: "f'(x)",
+                            data: derivadaValues,
+                            borderColor: 'red',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
